@@ -3,14 +3,14 @@ const int trigPin = 50;
 const int echoPin = 52;
 #define motor_r 0
 #define motor_l 1
-#define motor_r1 5
-#define motor_r2 6
-#define motor_l1 9
-#define motor_l2 8
-#define encoder_r1 2
-#define encoder_r2 3
-#define encoder_l1 19
-#define encoder_l2 18
+#define motor_r1 6
+#define motor_r2 5
+#define motor_l1 8
+#define motor_l2 9
+#define encoder_r1 3
+#define encoder_r2 2
+#define encoder_l1 18
+#define encoder_l2 19
 #define forward
 #define backward
 #define R 0.02
