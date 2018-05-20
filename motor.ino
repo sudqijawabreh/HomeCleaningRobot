@@ -1,20 +1,21 @@
 #include <Arduino.h>
 const int trigPin = 50;
 const int echoPin = 52;
+#define fan 32
 #define motor_r 0
 #define motor_l 1
-#define motor_r1 6
-#define motor_r2 5
-#define motor_l1 8
-#define motor_l2 9
+#define motor_r1 5
+#define motor_r2 6
+#define motor_l1 9
+#define motor_l2 8
 #define encoder_r1 3
-#define encoder_r2 2
-#define encoder_l1 18
-#define encoder_l2 19
+#define encoder_r2 2 
+#define encoder_l1 19
+#define encoder_l2 18 
 #define forward
 #define backward
 #define R 0.02
-#define L 0.2
+#define L 0.184
 #define tickR 945
 
 double u_x = 500;
@@ -65,15 +66,33 @@ void setup()
   Serial.begin(9600);
   Serial2.begin(9600);
   Serial2.print("a\n");
-  turn(90);
-  Serial.println("after turn");
-  moveToObs();
+  for(int i=0;i<2;i++){
+  turn(-90);
+  Serial.println("after turn -90");
+  //moveToObs();
+  moveForward(1);
+  delay(2000);
   Serial.println("after forward");
-  delay(5000);
+  delay(2000);
   turn(0);
-  Serial.println("after turn");
-  delay(5000);
-  moveToObs();
+  Serial.println("after turn 0");
+  delay(2000);
+  moveForward(0.2);
+  Serial.println("after move forward 20");
+  delay(2000);
+  turn(90);
+  Serial.println("after turn 90");
+  delay(2000);
+  //moveToObs();
+  moveForward(1);
+  Serial.println("after forward");
+  delay(2000);
+  turn(0);
+  Serial.println("after turn 0");
+  delay(2000);
+  moveForward(0.2);
+  }
+
   /*
   delay(2000);
   v=0;
@@ -97,8 +116,8 @@ void setup()
 }
 void moveForward(float distance)
 {
-  x_g += cos(theta_p) * distance;
-  y_g += sin(theta_p) * distance;
+  x_g =x_p+ cos(th_g) * distance;
+  y_g =y_p+ sin(th_g) * distance;
   v = 1;
   pid();
 }
@@ -159,7 +178,7 @@ void runSpeed(int m, double speed)
     speed = speed * -1;
     dir = 1;
   }
-  else
+  else if(speed>0)
     dir = 0;
   if (m == motor_r)
   {
@@ -319,6 +338,10 @@ void pid_theta()
       return;
     }
     calculateSpeed(v, w);
+    /*if(w<0)
+      vel_r=0;
+    else if(w>0)
+      vel_l=0;*/
     runSpeed(motor_r, vel_r);
     runSpeed(motor_l, vel_l);
     updatePosition();
@@ -352,14 +375,14 @@ void moveToObs(){
     Serial2.print("d ");
     Serial.print(distance);
     Serial2.print(distance);
-    double e_k = th - theta_p;
+    double e_k = th_g - theta_p;
     //double e_k = atan2(u_y, u_x) - theta_p;
     e_k = atan2(sin(e_k), cos(e_k));
     double eD = (e_k - e_p) / dt;
     eK += e_k * dt;
     double w = (e_k * p_pid) + (eD * d_pid) + (eK * i_pid);
 
-    if (distance<5&&distance>0)
+    if (distance<10&&distance>0)
     {
       Serial.println("inside the if");
       v = 0;
@@ -393,6 +416,7 @@ void pid()
     float d_pid = 0.0009;
     float i_pid = 0.00001;
     i_pid = 0;
+    long distance=getDistance();
     int t = millis();
     dt = t - t_p;
     u_x = x_g - x_p;
@@ -409,7 +433,7 @@ void pid()
     eK += e_k * dt;
     double w = (e_k * p_pid) + (eD * d_pid) + (eK * i_pid);
 
-    if (u_x < 0.01 && u_y < 0.01)
+    if (abs(u_x) < 0.01 && abs(u_y) < 0.01||(distance<10&&distance>0))
     {
       Serial.println("inside the if");
       v = 0;
